@@ -7,7 +7,7 @@ module UbuntuAmis
   URL="http://cloud-images.ubuntu.com/locator/ec2/releasesTable"
 
   def self.table
-    parse(fix(get(uri)))["aaData"]
+    fix_table(parse(fix_string(get(uri)))["aaData"])
   end
 
   def self.uri
@@ -20,8 +20,15 @@ module UbuntuAmis
     Net::HTTP.get_response(uri).body
   end
 
-  def self.fix(data)
+  def self.fix_string(data)
     data.reverse.sub(',','').reverse
+  end
+
+  def self.fix_table(table)
+    table.each_with_index{|row,index|
+      table[index][6] = row[6][/(ami-[\da-f]{8})/,1]
+    }
+    table
   end
 
   def self.parse(json)
